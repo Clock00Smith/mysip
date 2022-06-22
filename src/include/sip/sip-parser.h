@@ -137,7 +137,8 @@ public:
     }
     std::shared_ptr<Response> RESPONSE()
     {
-        return std::make_shared<Response>(Response());
+        std::vector<MessageHeader> headers;
+        return std::make_shared<Response>(Response(100, "TODO", headers));
     }
     RequestLine REQUEST_LINE()
     {
@@ -173,12 +174,30 @@ public:
         }
         return "INVITE";
     }
+    std::string ACK(){
+        for (char c : std::string("ACK")){
+            mustMatch(peek(), c);
+            read();
+        }
+        return "ACK";
+    }
+    std::string BYE(){
+        for (char c : std::string("BYE")){
+            mustMatch(peek(), c);
+            read();
+        }
+        return "BYE";
+    }
     std::string METHOD()
     {
         switch (peek())
         {
         case 'I':
             return INVITE();
+        case 'A':
+            return ACK();
+        case 'B':
+            return BYE();
         default:
             return "";
         }

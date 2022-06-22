@@ -13,4 +13,9 @@ target_link_libraries(test-parser gtest gtest_main)
 add_test(NAME test-parser COMMAND test-parser)
 
 add_executable(sip-parser ${SIP_SRC_DIR})
+
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
+    add_definitions(-DDEBUG)
+endif()
+
 add_executable(parser-benchmark tests/parser-benchmark.cpp)

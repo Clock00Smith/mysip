@@ -1,9 +1,18 @@
 #include "sip/sip-parser.h"
+#include "sip/sip-agent.h"
 #include "socket/raw-socket.h"
-int main(){
+
+#include <csignal>
+int count = 0;
+void signalHandler(int signum)
+{
+    std::cout << "Quit: " << count << std::endl;
+    exit(signum);
+}
+int main()
+{
+    signal(SIGINT, signalHandler);
     RawSocket socket("0.0.0.0", 5060);
-    RawSocket::RecvData rd = socket.Recv();
-    std::cout << rd.fromHost << ":" << rd.fromPort << std::endl;
-    auto sipMessage = SIPParser(rd.data).parse(); 
-    std::cout << *sipMessage << std::endl;
+    SipAgent sa(socket);
+    sa.Run(&count);
 }
