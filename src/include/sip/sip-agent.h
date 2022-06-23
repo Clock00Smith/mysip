@@ -1,6 +1,8 @@
 #pragma once
 #include "sip-message.h"
 #include "socket/raw-socket.h"
+#include "rtp/rtp-socket.h"
+#include "codecs/g711u.h"
 #include <thread>
 class SipAgent
 {
@@ -14,6 +16,12 @@ public:
             {
                 std::string data = req->genReply(100)->toString();
                 socket_.Send(data, "192.168.8.201", 5061);
+                std::thread t([&](){
+                    std::unique_ptr<G711U> g711u = std::make_unique<G711U>("./test.pcm");
+                    RTPSocket rtp(10000, "1000", std::move(g711u));
+                    rtp.Run();
+                });
+                t.detach();
                 socket_.Send(req->genReply(200)->toString(), "192.168.8.201", 5061);
             }
             else if (req->getMethod() == "ACK")
