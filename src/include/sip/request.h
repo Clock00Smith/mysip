@@ -106,7 +106,10 @@ public:
             }
         }
     }
-    virtual std::shared_ptr<SIPMessage> genReply(int code) override
+    virtual std::shared_ptr<SIPMessage> genReply(int code) override {
+        return genReply(code, "");
+    }
+    virtual std::shared_ptr<SIPMessage> genReply(int code, const std::string &body) override
     {
         std::vector<MessageHeader> headers;
         headers.push_back(getHeader("Via"));
@@ -125,14 +128,12 @@ public:
         {
             if (getMethod() == "INVITE")
             {
-                std::string body = "v=0\r\n"
-                                   "o=MY 12345 12345 IN IP4 192.168.8.201\r\n"
-                                   "s=MY\r\n"
-                                   "c=IN IP4 192.168.8.201\r\n"
-                                   "t=0 0\r\n"
-                                   "m=audio 10000 RTP/AVP 0\r\n"
-                                   "a=rtpmap:0 PCMU/8000\r\n";
+                
+                if (body != ""){
                 return std::make_shared<Response>(code, "OK", headers, body);
+                } else {
+                    return std::make_shared<Response>(code, "OK", headers);
+                }
             }
             else
             {

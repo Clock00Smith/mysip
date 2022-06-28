@@ -11,7 +11,6 @@ public:
     }
     virtual std::string decode(const std::string &data) override
     {
-
         std::string val = "";
         for (char c : data)
         {

@@ -4,7 +4,8 @@
 class Response : public SIPMessage
 {
 public:
-    Response(int code, const std::string &status, std::vector<MessageHeader> headers) : statusCode_(code), statusDesc_(status), headers_(headers) {
+    Response(int code, const std::string &status, std::vector<MessageHeader> headers) : statusCode_(code), statusDesc_(status), headers_(headers)
+    {
         headers_.push_back(MessageHeader("Content-Length", "0"));
     }
     Response(int code, const std::string &status, std::vector<MessageHeader> headers, const std::string &body) : statusCode_(code), statusDesc_(status), headers_(headers), body_(body)
@@ -41,6 +42,7 @@ public:
     {
         return std::make_shared<Response>(100, "Trying", std::vector<MessageHeader>());
     }
+    virtual std::shared_ptr<SIPMessage> genReply(int code, const std::string &body) override {}
 
 private:
     int statusCode_;
