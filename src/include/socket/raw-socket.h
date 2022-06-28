@@ -17,7 +17,7 @@ public:
 
     RawSocket(const std::string &host, int port) : host_(host), port_(port)
     {
-        fd_ = socket(AF_INET, SOCK_DGRAM, 0);
+        fd_ = socket(AF_INET, SOCK_DGRAM|SOCK_NONBLOCK, 0);
         if (fd_ > 0)
         {
             struct sockaddr_in localAddr;
@@ -31,6 +31,7 @@ public:
         {
             std::cout << "Oh no." << std::endl;
         }
+
     }
     RecvData Recv(const size_t mtu = 65535)
     {
@@ -56,7 +57,6 @@ public:
         socklen_t len = sizeof(peerAddr);
         sendto(fd_, data.c_str(), data.size(), 0, reinterpret_cast<struct sockaddr *>(&peerAddr), len);
     }
-
 protected:
     int port() const
     {

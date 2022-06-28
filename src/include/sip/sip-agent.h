@@ -30,9 +30,13 @@ public:
     }
     void Run(int *count)
     {
-        while (true)
+        running_ = true;
+        while (running_)
         {
             RawSocket::RecvData rd = socket_.Recv();
+            if (rd.data.size() == 0){
+                continue;
+            }
             auto sipMessage = SIPParser(rd.data).parse();
             (*count)++;
             Serv(sipMessage);
@@ -48,9 +52,16 @@ public:
     void print(std::shared_ptr<SIPMessage> msg){
         std::cout << *msg << std::endl;
     }
+    void stop(){
+        running_ = false;
+    }
+    void log(const std::string& msg){
+        std::cout << msg << std::endl;
+    }
 private:
     int rtpPortHi_{10000}, rtpPortLo_{15000}; // port range.
     int nextPort_{10000}; // next port for rtp
+    bool running_{false};
     RawSocket socket_; // the sip socket.
 
     std::map<std::string, std::function<void(std::shared_ptr<SIPMessage>)>> handlers_;
