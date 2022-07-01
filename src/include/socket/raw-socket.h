@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <string>
+#include <iostream>
 
 class RawSocket
 {
@@ -17,7 +18,7 @@ public:
 
     RawSocket(const std::string &host, int port) : host_(host), port_(port)
     {
-        fd_ = socket(AF_INET, SOCK_DGRAM|SOCK_NONBLOCK, 0);
+        fd_ = socket(AF_INET, SOCK_DGRAM, 0);
         if (fd_ > 0)
         {
             struct sockaddr_in localAddr;

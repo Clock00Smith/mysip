@@ -5,6 +5,7 @@
 #include <memory>
 #include "request.h"
 #include "response.h"
+
 constexpr char SPACE = ' ';
 constexpr char CR = '\r';
 constexpr char LF = '\n';
@@ -188,6 +189,13 @@ public:
         }
         return "BYE";
     }
+    std::string CANCEL(){
+        for (char c : std::string("CANCEL")){
+            mustMatch(peek(), c);
+            read();
+        }
+        return "CANCEL";
+    }
     std::string METHOD()
     {
         switch (peek())
@@ -198,6 +206,8 @@ public:
             return ACK();
         case 'B':
             return BYE();
+        case 'C':
+            return CANCEL();
         default:
             return "";
         }

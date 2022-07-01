@@ -1,13 +1,9 @@
-#include "sip/sip-parser.h"
+#include "lua5.3/lua.hpp"
 #include "sip/sip-agent.h"
 #include "socket/raw-socket.h"
-#include "lua5.3/lua.hpp"
 #include <csignal>
 int count = 0;
-void signalHandler(int signum)
-{
-    std::cout << "q to quit." << std::endl;
-}
+void signalHandler(int signum) { std::cout << "q to quit." << std::endl; }
 int main()
 {
     signal(SIGINT, signalHandler);
@@ -17,18 +13,16 @@ int main()
     SipAgent sa(socket, 10000, 20000);
     std::thread t([&sa]()
                   {
-        sa.addHandler("INVITE", [&sa](std::shared_ptr<SIPMessage> msg)
-                      {
-        // sa.print(msg);
-        sa.doLua("../scripts/invite.lua", msg);
-         });
-        sa.addHandler("ACK", [&sa](std::shared_ptr<SIPMessage> msg) { // sa.print(msg); 
-        });
-            sa.addHandler("BYE", [&sa](std::shared_ptr<SIPMessage> msg)
-                          {
-        // sa.print(msg);
-        sa.reply(200, msg); });
-            sa.Run(&count); });
+    sa.addHandler("INVITE", [&sa](std::shared_ptr<SIPMessage> msg) {
+      sa.doLua("../scripts/invite.lua", msg);
+    });
+    sa.addHandler("ACK", [&sa](std::shared_ptr<SIPMessage> msg) {});
+    sa.addHandler(
+        "BYE", [&sa](std::shared_ptr<SIPMessage> msg) { sa.reply(200, msg); });
+    // sa.addHandler("CANCEL", [&sa](std::shared_ptr<SIPMessage> msg) {
+    //   sa.doLua("../scripts/cance.lua", msg);
+    // });
+    sa.Run(&count); });
     char c;
     while (c != 'q')
     {
