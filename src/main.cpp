@@ -3,7 +3,11 @@
 #include "socket/raw-socket.h"
 #include <csignal>
 int count = 0;
-void signalHandler(int signum) { std::cout << "q to quit." << std::endl; }
+void signalHandler(int signum)
+{
+    std::cout << "q to quit." << std::endl;
+    exit(0);
+}
 int main()
 {
     signal(SIGINT, signalHandler);
@@ -14,14 +18,18 @@ int main()
     std::thread t([&sa]()
                   {
     sa.addHandler("INVITE", [&sa](std::shared_ptr<SIPMessage> msg) {
-      sa.doLua("../scripts/invite.lua", msg);
+        sa.reply(100, msg);
+        sa.reply(183, msg);
+        sa.replyWithMedia(200, msg, "G711U");
+    });
+    sa.addHandler("CANCEL", [&sa](std::shared_ptr<SIPMessage> msg){
+        sa.reply(200, msg);
     });
     sa.addHandler("ACK", [&sa](std::shared_ptr<SIPMessage> msg) {});
     sa.addHandler(
-        "BYE", [&sa](std::shared_ptr<SIPMessage> msg) { sa.reply(200, msg); });
-    // sa.addHandler("CANCEL", [&sa](std::shared_ptr<SIPMessage> msg) {
-    //   sa.doLua("../scripts/cance.lua", msg);
-    // });
+        "BYE", [&sa](std::shared_ptr<SIPMessage> msg) {
+            sa.reply(200, msg);
+        });
     sa.Run(&count); });
     char c;
     while (c != 'q')

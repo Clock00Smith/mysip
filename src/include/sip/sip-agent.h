@@ -65,7 +65,13 @@ public:
     void reply(int code, std::shared_ptr<SIPMessage> msg)
     {
         auto req = std::dynamic_pointer_cast<Request>(msg);
-        socket_.Send(req->genReply(code)->toString(), "192.168.8.201", 5061);
+        socket_.Send(req->genReply(code)->toString(), "192.168.56.101", 5061);
+    }
+    void replyWithMedia(int code, std::shared_ptr<SIPMessage> msg, std::string codec){
+        auto req = std::dynamic_pointer_cast<Request>(msg);
+        SDP sdp = SDP::GetSDPWithCodec(codec, req->getHeader("Call-ID").data());
+        auto rep = req->genReply(code, sdp.toString());
+        socket_.Send(rep->toString(), "192.168.56.101", 5061);
     }
     void print(std::shared_ptr<SIPMessage> msg)
     {
@@ -107,13 +113,16 @@ private:
     int nextPort_{10000};                     // next port for rtp
     bool running_{false};
     RawSocket socket_; // the sip socket.
-
     std::map<std::string, std::function<void(std::shared_ptr<SIPMessage>)>> handlers_;
 };
 
 static int l_reply(lua_State *L)
 {
     // int status = lua_tointeger(L, -1);
+    if (lua_gettop(L) < 3){
+        std::cout << "error: reply take two args." << std::endl;
+        return 0;
+    }
     std::shared_ptr<SIPMessage> **msg = (std::shared_ptr<SIPMessage> **)lua_touserdata(L, 3);
     int status = lua_tointeger(L, 2);
     SipAgent **sa = (SipAgent **)luaL_checkudata(L, 1, SIP_AGENT_MT);

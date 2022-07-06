@@ -15,7 +15,7 @@ add_executable(test-parser tests/sip-parser/test-basic.cpp)
 target_link_libraries(test-parser gtest gtest_main SipParser)
 add_test(NAME test-parser COMMAND test-parser)
 
-add_executable(my-sip ${SIP_SRC_DIR})
+add_executable(my-sip ${SIP_SRC_DIR} src/sdp/sdp.cpp)
 target_link_libraries(my-sip ${LUA53_LIBRARIES})
 target_link_libraries(my-sip SipParser)
 

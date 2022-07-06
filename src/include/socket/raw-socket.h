@@ -5,10 +5,16 @@
 #include <arpa/inet.h>
 #include <string>
 #include <iostream>
+#include <exception>
 
 class RawSocket
 {
 public:
+    class SocketException : std::runtime_error
+    {
+    public:
+        SocketException(const std::string &error) : std::runtime_error(error){};
+    };
     struct RecvData
     {
         std::string fromHost;
@@ -18,6 +24,7 @@ public:
 
     RawSocket(const std::string &host, int port) : host_(host), port_(port)
     {
+
         fd_ = socket(AF_INET, SOCK_DGRAM, 0);
         if (fd_ > 0)
         {
@@ -27,12 +34,18 @@ public:
             localAddr.sin_port = htons(port_);
             socklen_t len = sizeof(localAddr);
             bind(fd_, reinterpret_cast<struct sockaddr *>(&localAddr), len);
+            timeval tv = {1, 0};
+            int b = setsockopt(fd_, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv));
+            if (b)
+            {
+                std::cout << "setsockopt: " << b << std::endl;
+            }
         }
         else
         {
             std::cout << "Oh no." << std::endl;
+            throw SocketException("Oh no.");
         }
-
     }
     RecvData Recv(const size_t mtu = 65535)
     {
@@ -58,6 +71,7 @@ public:
         socklen_t len = sizeof(peerAddr);
         sendto(fd_, data.c_str(), data.size(), 0, reinterpret_cast<struct sockaddr *>(&peerAddr), len);
     }
+
 protected:
     int port() const
     {

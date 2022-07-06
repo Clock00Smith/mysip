@@ -89,16 +89,13 @@ public:
                 codec_->decode(getPayload(rd.data));
             }
         }
+        return count;
     }
     void Stop()
     {
         running_ = false;
     }
 
-    SDP getSDP()
-    {
-        return SDP(this->port());
-    }
 
 private:
     uint16_t getSeqNo(const std::string &data) const
