@@ -5,8 +5,6 @@ project(my-sip)
 include_directories(src/include)
 aux_source_directory(src SIP_SRC_DIR)
 add_subdirectory(src/sip)
-find_package(PkgConfig)
-pkg_search_module(LUA53 REQUIRED lua53)
 
 enable_testing()
 add_subdirectory(third-party/googletest)
@@ -15,8 +13,7 @@ add_executable(test-parser tests/sip-parser/test-basic.cpp)
 target_link_libraries(test-parser gtest gtest_main SipParser)
 add_test(NAME test-parser COMMAND test-parser)
 
-add_executable(my-sip ${SIP_SRC_DIR} src/sdp/sdp.cpp)
-target_link_libraries(my-sip ${LUA53_LIBRARIES})
+add_executable(my-sip ${SIP_SRC_DIR} src/sdp/sdp.cpp src/socket/raw-socket.cpp src/rtp/rtp-socket.cpp)
 target_link_libraries(my-sip SipParser)
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)

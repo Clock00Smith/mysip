@@ -1,2 +1,5 @@
 aux_source_directory(. SIP_PARSER_LIBS)
+find_package(PkgConfig)
+pkg_search_module(LUA53 REQUIRED lua53)
 add_library(SipParser ${SIP_PARSER_LIBS})
+target_link_libraries(SipParser ${LUA53_LIBRARIES})
