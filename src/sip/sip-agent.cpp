@@ -2,8 +2,10 @@
 
 #define SIP_AGENT_MT "mt.sipagent"
 static int l_reply(lua_State *L);
+static int l_reply_with_media(lua_State *L);
 static luaL_Reg SA_META[] = {
     {"reply", l_reply},
+    {"replyWithMedia", l_reply_with_media},
     {nullptr, nullptr},
 };
 
@@ -97,4 +99,16 @@ static int l_reply(lua_State *L) {
   int status = lua_tointeger(L, 2);
   SipAgent **sa = (SipAgent **)luaL_checkudata(L, 1, SIP_AGENT_MT);
   (*sa)->reply(status, *(*msg));
+}
+
+static int l_reply_with_media(lua_State *L) {
+  if (lua_gettop(L) < 4) {
+    std::cout << "error: reply with media take 3 args." << std::endl;
+    return 0;
+  }
+  std::string codecName = lua_tostring(L, 4);
+  std::shared_ptr<SIPMessage> **msg = (std::shared_ptr<SIPMessage> **)lua_touserdata(L, 3);
+  int statusCode = lua_tointeger(L, 2);
+  SipAgent **sa = (SipAgent **)luaL_checkudata(L, 1, SIP_AGENT_MT);
+  (*sa)->replyWithMedia(statusCode, *(*msg), codecName);
 }
