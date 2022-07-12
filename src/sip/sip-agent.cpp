@@ -25,9 +25,9 @@ void SipAgent::ServDefault(std::shared_ptr<SIPMessage> msg) {
   std::cout << *msg << std::endl;
 }
 
-SipAgent::SipAgent(RawSocket socket) : socket_(socket) {}
+SipAgent::SipAgent(const std::string &host, int port) : socket_(host, port) {}
 
-SipAgent::SipAgent(RawSocket socket, int lo, int hi) : socket_(socket), rtpPortLo_(lo), rtpPortHi_(hi) {
+SipAgent::SipAgent(const std::string &host, int port, int lo, int hi) : socket_(host, port), rtpPortLo_(lo), rtpPortHi_(hi) {
   nextPort_ = lo;
 }
 
@@ -55,7 +55,17 @@ void SipAgent::reply(int code, std::shared_ptr<SIPMessage> msg) {
 
 void SipAgent::replyWithMedia(int code, std::shared_ptr<SIPMessage> msg, std::string codec) {
   auto req = std::dynamic_pointer_cast<Request>(msg);
+  std::string callId = req->getHeader("Call-ID").data();
   SDP sdp = SDP::GetSDPWithCodec(codec, req->getHeader("Call-ID").data());
+  SipDialog sipDialog;
+  sipDialog.callID_ = req->getHeader("Call-ID").data();
+  sipDialog.hasMedia_ = true;
+  sipDialog.rtpSocket_ = sdp.getSocket();
+  std::thread rtpThread([](std::shared_ptr<RTPSocket> sock) { sock->Run(); }, sipDialog.rtpSocket_);
+  rtpThread.detach();
+  dialogs_[callId] = sipDialog;
+  std::cout << callId << " : using port: " << sipDialog.rtpSocket_->port() << std::endl;
+
   auto rep = req->genReply(code, sdp.toString());
   socket_.Send(rep->toString(), "192.168.56.101", 5061);
 }
@@ -66,6 +76,17 @@ void SipAgent::stop() { running_ = false; }
 
 void SipAgent::log(const std::string &msg) { std::cout << msg << std::endl; }
 
+void SipAgent::endDialog(std::shared_ptr<SIPMessage> &msg) {
+  auto req = std::dynamic_pointer_cast<Request>(msg);
+  std::string callId = req->getHeader("Call-ID").data();
+  if (auto itr = dialogs_.find(callId); itr != dialogs_.end()) {
+    std::cout << "removing " << callId << " on port: " << dialogs_[callId].rtpSocket_->port() << std::endl;
+    dialogs_[callId].rtpSocket_->Stop();
+    dialogs_.erase(callId);
+  } else {
+    std::cout << "no " << callId << " found." << std::endl;
+  }
+}
 void SipAgent::doLua(const std::string &path, std::shared_ptr<SIPMessage> msg) {
   lua_State *L = luaL_newstate();
   luaL_openlibs(L);

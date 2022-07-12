@@ -7,8 +7,12 @@ size_t RTPSocket::Run() {
   size_t count = 0;
   uint16_t last = 0;
   uint16_t cur = 0;
+  std::cout << "RTPSocket running: " << port() << std::endl;
   while (running_) {
     RecvData rd = Recv();  // this will block, so we will never know when to close it.
+    if (rd.data.size() == 0){
+      continue;
+    }
     count++;
     cur = getSeqNo(rd.data);
     if (cur < last && cur != 0) {
@@ -20,6 +24,7 @@ size_t RTPSocket::Run() {
       codec_->decode(getPayload(rd.data));
     }
   }
+  std::cout << "RTPSocket end: " << count << " pack recv." << std::endl;
   return count;
 }
 

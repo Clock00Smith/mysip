@@ -1,6 +1,5 @@
 #pragma once
 #include <endian.h>
-#include <sdp/sdp.h>
 #include <atomic>
 #include <iostream>
 #include <memory>

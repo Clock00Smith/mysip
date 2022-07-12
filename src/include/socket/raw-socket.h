@@ -20,10 +20,10 @@ class RawSocket {
   };
 
   RawSocket(const std::string &host, int port);
+  virtual ~RawSocket();
   RecvData Recv(const size_t mtu = 65535);
   void Send(const std::string &data, const std::string &host, int port);
 
- protected:
   int port() const;
 
  private:

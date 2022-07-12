@@ -11,13 +11,15 @@ int main() {
   signal(SIGINT, signalHandler);
   std::cout << "bringing up lua." << std::endl;
   std::cout << "bring up sip." << std::endl;
-  RawSocket socket("0.0.0.0", 5060);
-  SipAgent sa(socket, 10000, 20000);
+  SipAgent sa("0.0.0.0", 5060, 10000, 20000);
   std::thread t([&sa]() {
     sa.addHandler("INVITE", [&sa](std::shared_ptr<SIPMessage> msg) { sa.doLua("../scripts/invite.lua", msg); });
     sa.addHandler("CANCEL", [&sa](std::shared_ptr<SIPMessage> msg) { sa.doLua("../scripts/cancel.lua", msg); });
     sa.addHandler("ACK", [&sa](std::shared_ptr<SIPMessage> msg) {});
-    sa.addHandler("BYE", [&sa](std::shared_ptr<SIPMessage> msg) { sa.doLua("../scripts/bye.lua", msg); });
+    sa.addHandler("BYE", [&sa](std::shared_ptr<SIPMessage> msg) {
+      sa.doLua("../scripts/bye.lua", msg);
+      sa.endDialog(msg);
+    });
     sa.Run(&count);
   });
   char c;

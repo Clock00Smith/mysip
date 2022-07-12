@@ -5,6 +5,7 @@
 class G711U : public Codec {
  public:
   G711U(const std::string &path) { file_.open(path); }
+  virtual ~G711U() { file_.close(); }
   virtual std::string decode(const std::string &data) override {
     std::string val = "";
     for (char c : data) {

@@ -16,7 +16,10 @@ RawSocket::RawSocket(const std::string &host, int port) : host_(host), port_(por
     throw SocketException("creating fail.");
   }
 }
-
+RawSocket::~RawSocket(){
+  std::cout << "closing: " << port() << std::endl;
+  close(fd_);
+}
 RawSocket::RecvData RawSocket::Recv(const size_t mtu) {
   char buffer[mtu];
   struct sockaddr_in peerAddr;
