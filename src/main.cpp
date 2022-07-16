@@ -13,10 +13,10 @@ int main() {
   std::cout << "bring up sip." << std::endl;
   SipAgent sa("0.0.0.0", 5060, 10000, 20000);
   std::thread t([&sa]() {
-    sa.addHandler("INVITE", [&sa](std::shared_ptr<SIPMessage> msg) { sa.doLua("../scripts/invite.lua", msg); });
-    sa.addHandler("CANCEL", [&sa](std::shared_ptr<SIPMessage> msg) { sa.doLua("../scripts/cancel.lua", msg); });
-    sa.addHandler("ACK", [&sa](std::shared_ptr<SIPMessage> msg) {});
-    sa.addHandler("BYE", [&sa](std::shared_ptr<SIPMessage> msg) {
+    sa.addRequestHandler("INVITE", [&sa](std::shared_ptr<SIPMessage> msg) { sa.doLua("../scripts/invite.lua", msg); });
+    sa.addRequestHandler("CANCEL", [&sa](std::shared_ptr<SIPMessage> msg) { sa.doLua("../scripts/cancel.lua", msg); });
+    sa.addRequestHandler("ACK", [&sa](std::shared_ptr<SIPMessage> msg) {});
+    sa.addRequestHandler("BYE", [&sa](std::shared_ptr<SIPMessage> msg) {
       sa.doLua("../scripts/bye.lua", msg);
       sa.endDialog(msg);
     });
@@ -24,6 +24,11 @@ int main() {
   });
   char c;
   while (c != 'q') {
+    switch (c) {
+      case 'i':
+        sa.invite("sip:9196@192.168.56.101:5061", "sip:1000@192.168.56.101:5060");
+        break;
+    }
     std::cout << "q to quit." << std::endl;
     std::cin >> c;
   }

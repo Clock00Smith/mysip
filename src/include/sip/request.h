@@ -2,6 +2,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <optional>
 #include <vector>
 #include "request-line.h"
 #include "response.h"
@@ -11,11 +12,10 @@ class Request : public SIPMessage {
  public:
   std::map<int, std::string> STATUS_DESC = {{200, "OK"}, {100, "Trying"}};
   Request(const RequestLine &rl);
-  void AddHeaders(const MessageHeader &mh);
   bool operator==(const Request &other) const;
-  std::string &body();
+  std::string body() const;
+  void setBody(const std::string &body);
   std::string getMethod() const;
-  MessageHeader getHeader(const std::string &name) const;
   virtual std::shared_ptr<SIPMessage> genReply(int code) override;
   virtual std::shared_ptr<SIPMessage> genReply(int code, const std::string &body) override;
   virtual bool _equal(const SIPMessage &other) const override;
@@ -26,6 +26,5 @@ class Request : public SIPMessage {
 
  private:
   RequestLine rl_;
-  std::vector<MessageHeader> headers_;
   std::string body_;
 };

@@ -10,7 +10,7 @@ size_t RTPSocket::Run() {
   std::cout << "RTPSocket running: " << port() << std::endl;
   while (running_) {
     RecvData rd = Recv();  // this will block, so we will never know when to close it.
-    if (rd.data.size() == 0){
+    if (rd.data.size() == 0) {
       continue;
     }
     count++;

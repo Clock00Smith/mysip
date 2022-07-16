@@ -1,7 +1,6 @@
 #include "sip/request.h"
 
 Request::Request(const RequestLine &rl) : rl_(rl) {}
-void Request::AddHeaders(const MessageHeader &mh) { headers_.push_back(mh); }
 
 bool Request::operator==(const Request &other) const {
   if (rl_ == other.rl_ && headers_.size() == other.headers_.size()) {
@@ -19,26 +18,23 @@ bool Request::operator==(const Request &other) const {
   return false;
 }
 
-std::string &Request::body() { return body_; }
-
+std::string Request::body() const { return body_; }
+void Request::setBody(const std::string &body) {
+  AddHeaders(MessageHeader("Content-Type", "application/sdp"));
+  AddHeaders(MessageHeader("Content-Length", std::to_string(body.size())));
+  body_ = body;
+}
 std::string Request::getMethod() const { return rl_.method(); }
 
-MessageHeader Request::getHeader(const std::string &name) const {
-  for (auto itr = headers_.cbegin(); itr != headers_.cend(); itr++) {
-    if (itr->name() == name) {
-      return *itr;
-    }
-  }
-}
 std::shared_ptr<SIPMessage> Request::genReply(int code) { return genReply(code, ""); }
 
 std::shared_ptr<SIPMessage> Request::genReply(int code, const std::string &body) {
   std::vector<MessageHeader> headers;
-  headers.push_back(getHeader("Via"));
-  headers.push_back(getHeader("From"));
-  headers.push_back(getHeader("To"));
-  headers.push_back(getHeader("Call-ID"));
-  headers.push_back(getHeader("CSeq"));
+  headers.push_back(getHeader("Via").value());
+  headers.push_back(getHeader("From").value());
+  headers.push_back(getHeader("To").value());
+  headers.push_back(getHeader("Call-ID").value());
+  headers.push_back(getHeader("CSeq").value());
   switch (code) {
     case 100: {
       return std::make_shared<Response>(code, "Trying", headers);
@@ -69,7 +65,16 @@ std::ostream &Request::_print(std::ostream &os) const
   return os << *this;
 }
 
-std::string Request::toString() const { return "TODO"; }
+std::string Request::toString() const {
+  std::string val = "";
+  val += rl_.toString() + "\r\n";
+  for (auto mh : headers_) {
+    val += mh.name() + ": " + mh.data() + "\r\n";
+  }
+  val += "\r\n";
+  val += body_ + "\r\n";
+  return val;
+}
 
 Request::MessageType Request::type() const { return MessageType::REQUEST; }
 

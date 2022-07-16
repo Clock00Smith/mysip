@@ -101,7 +101,16 @@ std::shared_ptr<Request> SIPParser::REQUEST() {
 std::shared_ptr<Response> SIPParser::RESPONSE() {
   // TODO
   std::vector<MessageHeader> headers;
-  return std::make_shared<Response>(Response(100, "TODO", headers));
+  StatusLine sl = STATUS_LINE();
+  Response res(sl);
+  while (peek() != '\r') {
+    MessageHeader mh = MESSAGE_HEADER();
+    res.AddHeaders(mh);
+    CRLF();
+  }
+  CRLF();
+  res.body() = MESSAGE_BODY();
+  return std::make_shared<Response>(res);
 }
 
 RequestLine SIPParser::REQUEST_LINE() {
@@ -125,6 +134,34 @@ std::string SIPParser::REQUEST_URI() {
     }
     val += read();
   }
+  return val;
+}
+
+StatusLine SIPParser::STATUS_LINE() {
+  std::string sip_version = SIP_VERSION();
+  SP();
+  int status_code = STATUS_CODE();
+  SP();
+  std::string reason_phrase = REASON_PHRASE();
+  CRLF();
+  return StatusLine(sip_version, status_code, reason_phrase);
+}
+
+int SIPParser::STATUS_CODE() {
+  std::string val = "";
+  for (int i = 0; i < 3; i++) {
+    if (peek() < '0' && peek() > '9') {
+      throw UnmatchException(cur_ptr_, "digit.");
+    } else {
+      val += read();
+    }
+  }
+  return std::atoi(val.c_str());
+}
+
+std::string SIPParser::REASON_PHRASE() {
+  std::string val = "";
+  val += readTillCRLF();
   return val;
 }
 

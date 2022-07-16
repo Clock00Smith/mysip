@@ -12,22 +12,46 @@ static luaL_Reg SA_META[] = {
 void SipAgent::Serv(std::shared_ptr<SIPMessage> msg) {
   if (msg->type() == SIPMessage::MessageType::REQUEST) {
     auto req = std::dynamic_pointer_cast<Request>(msg);
-    if (auto func = handlers_.find(req->getMethod()); func != handlers_.end()) {
+    if (auto func = requestHandlers_.find(req->getMethod()); func != requestHandlers_.end()) {
       func->second(msg);
+    } else {
+      ServDefault(msg);
+    }
+  } else {
+    auto res = std::dynamic_pointer_cast<Response>(msg);
+    if (res->StatusCode() >= 400) {
+      sendAck(res);
+    } else if (res->StatusCode() >= 200) {
+      sendAck(res);
     } else {
       ServDefault(msg);
     }
   }
 }
-
+void SipAgent::sendAck(std::shared_ptr<Response> msg) {
+  std::string callId = msg->getHeader("Call-ID").value().data();
+  std::cout << "This is a response for: " << callId << std::endl;
+  SipDialog sipDialog = dialogs_[callId];
+  std::thread rtpThread([](std::shared_ptr<RTPSocket> sock) { sock->Run(); }, sipDialog.rtpSocket_);
+  rtpThread.detach();
+  Request req(RequestLine("ACK", sipDialog.uri_, "SIP/2.0"));
+  req.AddHeaders(msg->getHeader("Via").value());
+  req.AddHeaders(msg->getHeader("To").value());
+  req.AddHeaders(msg->getHeader("From").value());
+  req.AddHeaders(MessageHeader("Max-Forwards", "70"));
+  req.AddHeaders(MessageHeader("CSeq", "1 ACK"));
+  req.AddHeaders(MessageHeader("Call-ID", callId));
+  req.AddHeaders(MessageHeader("Content-Length", "0"));
+  socket_.Send(req.toString(), "192.168.56.101", 5061);
+}
 void SipAgent::ServDefault(std::shared_ptr<SIPMessage> msg) {
   std::cout << "Got msg but have no handler for it. " << std::endl;
   std::cout << *msg << std::endl;
 }
-
 SipAgent::SipAgent(const std::string &host, int port) : socket_(host, port) {}
 
-SipAgent::SipAgent(const std::string &host, int port, int lo, int hi) : socket_(host, port), rtpPortLo_(lo), rtpPortHi_(hi) {
+SipAgent::SipAgent(const std::string &host, int port, int lo, int hi)
+    : socket_(host, port), rtpPortLo_(lo), rtpPortHi_(hi) {
   nextPort_ = lo;
 }
 
@@ -44,8 +68,8 @@ void SipAgent::Run(int *count) {
   }
 }
 
-void SipAgent::addHandler(const std::string &method, std::function<void(std::shared_ptr<SIPMessage>)> func) {
-  handlers_[method] = func;
+void SipAgent::addRequestHandler(const std::string &method, std::function<void(std::shared_ptr<SIPMessage>)> func) {
+  requestHandlers_[method] = func;
 }
 
 void SipAgent::reply(int code, std::shared_ptr<SIPMessage> msg) {
@@ -55,10 +79,10 @@ void SipAgent::reply(int code, std::shared_ptr<SIPMessage> msg) {
 
 void SipAgent::replyWithMedia(int code, std::shared_ptr<SIPMessage> msg, std::string codec) {
   auto req = std::dynamic_pointer_cast<Request>(msg);
-  std::string callId = req->getHeader("Call-ID").data();
-  SDP sdp = SDP::GetSDPWithCodec(codec, req->getHeader("Call-ID").data());
+  std::string callId = req->getHeader("Call-ID").value().data();
+  SDP sdp = SDP::GetSDPWithCodec(codec, req->getHeader("Call-ID").value().data());
   SipDialog sipDialog;
-  sipDialog.callID_ = req->getHeader("Call-ID").data();
+  sipDialog.callID_ = req->getHeader("Call-ID").value().data();
   sipDialog.hasMedia_ = true;
   sipDialog.rtpSocket_ = sdp.getSocket();
   std::thread rtpThread([](std::shared_ptr<RTPSocket> sock) { sock->Run(); }, sipDialog.rtpSocket_);
@@ -76,9 +100,9 @@ void SipAgent::stop() { running_ = false; }
 
 void SipAgent::log(const std::string &msg) { std::cout << msg << std::endl; }
 
-void SipAgent::endDialog(std::shared_ptr<SIPMessage> &msg) {
+void SipAgent::endDialog(std::shared_ptr<SIPMessage> msg) {
   auto req = std::dynamic_pointer_cast<Request>(msg);
-  std::string callId = req->getHeader("Call-ID").data();
+  std::string callId = req->getHeader("Call-ID").value().data();
   if (auto itr = dialogs_.find(callId); itr != dialogs_.end()) {
     std::cout << "removing " << callId << " on port: " << dialogs_[callId].rtpSocket_->port() << std::endl;
     dialogs_[callId].rtpSocket_->Stop();
@@ -86,6 +110,31 @@ void SipAgent::endDialog(std::shared_ptr<SIPMessage> &msg) {
   } else {
     std::cout << "no " << callId << " found." << std::endl;
   }
+}
+
+void SipAgent::invite(const std::string &toUri, const std::string &fromUri) {
+  std::string callId = "TEST-ID";
+  Request req(RequestLine("INVITE", RequestURI(toUri), "SIP/2.0"));
+  req.AddHeaders(MessageHeader("To", "<" + toUri + ">"));
+  req.AddHeaders(MessageHeader("From", "<" + fromUri + ">"));
+  req.AddHeaders(MessageHeader("Call-ID", callId));
+  req.AddHeaders(MessageHeader("Max-Forwards", "70"));
+  req.AddHeaders(MessageHeader("Via", "SIP/2.0/UDP 192.168.56.101:5060;branch=z9hG4bKacN9Hdfiu34"));
+  req.AddHeaders(MessageHeader("CSeq", "1 INVITE"));
+  req.AddHeaders(MessageHeader("Contact", "<sip:my@192.168.56.101:5060>"));
+  SDP sdp = SDP::GetSDPWithCodec("G711U", callId);
+  req.setBody(sdp.toString());
+  SipDialog sipDialog;
+  sipDialog.uri_ = toUri;
+  sipDialog.callID_ = callId;
+  sipDialog.hasMedia_ = true;
+  sipDialog.rtpSocket_ = sdp.getSocket();
+  // std::thread rtpThread([](std::shared_ptr<RTPSocket> sock) { sock->Run(); }, sipDialog.rtpSocket_);
+  // rtpThread.detach();
+  dialogs_[callId] = sipDialog;
+
+  socket_.Send(req.toString(), "192.168.56.101", 5061);
+  std::cout << req.toString() << std::endl;
 }
 void SipAgent::doLua(const std::string &path, std::shared_ptr<SIPMessage> msg) {
   lua_State *L = luaL_newstate();

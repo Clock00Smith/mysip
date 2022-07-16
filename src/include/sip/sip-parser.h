@@ -38,7 +38,6 @@ class SIPParser {
   void SP();
   // Repuest-Line *(message-header) CRLF [message-body]
   std::shared_ptr<Request> REQUEST();
-  std::shared_ptr<Response> RESPONSE();
   RequestLine REQUEST_LINE();
 
   std::string REQUEST_URI();
@@ -59,6 +58,12 @@ class SIPParser {
   // since sdp wont have 0x00.
   // and sdp is the only once we care.
   std::string MESSAGE_BODY();
+
+
+  std::shared_ptr<Response> RESPONSE();
+  StatusLine STATUS_LINE();
+  int STATUS_CODE();
+  std::string REASON_PHRASE();
   std::string readTillEnd();
   std::string readTill(char c);
 

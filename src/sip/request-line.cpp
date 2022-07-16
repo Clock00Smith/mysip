@@ -12,3 +12,5 @@ bool RequestLine::operator==(const RequestLine &other) const {
 std::ostream &operator<<(std::ostream &os, const RequestLine &obj) {
   return os << obj.method_ << " " << obj.uri_ << " " << obj.sipVersion_ << std::endl;
 }
+
+std::string RequestLine::toString() const { return method_ + " " + uri_.toString() + " " + sipVersion_; }
