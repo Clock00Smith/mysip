@@ -1,6 +1,6 @@
 #include "sip/sip-message.h"
-SIPMessage::SIPMessage() {}
-SIPMessage::SIPMessage(std::vector<MessageHeader> headers) : headers_(headers) {}
+SIPMessage::SIPMessage() = default; 
+SIPMessage::SIPMessage(std::vector<MessageHeader> headers) : headers_(std::move(headers)) {}
 bool SIPMessage::operator==(const SIPMessage &other) const {
   if (typeid(*this) != typeid(other)) {
     return false;
@@ -9,10 +9,10 @@ bool SIPMessage::operator==(const SIPMessage &other) const {
 }
 void SIPMessage::AddHeaders(const MessageHeader &mh) { headers_.push_back(mh); }
 
-std::optional<MessageHeader> SIPMessage::getHeader(const std::string &name) const {
-  for (auto itr = headers_.cbegin(); itr != headers_.cend(); itr++) {
-    if (itr->name() == name) {
-      return *itr;
+std::optional<MessageHeader> SIPMessage::GetHeader(const std::string &name) const {
+  for (const auto & header : headers_) {
+    if (header.name() == name) {
+      return header;
     }
   }
   return std::nullopt;

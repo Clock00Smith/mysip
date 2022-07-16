@@ -1,7 +1,7 @@
 #include "rtp/rtp-socket.h"
 
-RTPSocket::RTPSocket(int port, const std::string &call_id, std::unique_ptr<Codec> codec)
-    : RawSocket("", port), callId_(call_id), running_(true), codec_(std::move(codec)){};
+RTPSocket::RTPSocket(int port, std::string call_id, std::unique_ptr<Codec> codec)
+    : RawSocket("", port), callId_(std::move(call_id)), running_(true), codec_(std::move(codec)){};
 
 size_t RTPSocket::Run() {
   size_t count = 0;
@@ -10,7 +10,7 @@ size_t RTPSocket::Run() {
   std::cout << "RTPSocket running: " << port() << std::endl;
   while (running_) {
     RecvData rd = Recv();  // this will block, so we will never know when to close it.
-    if (rd.data.size() == 0) {
+    if (rd.data.empty()) {
       continue;
     }
     count++;

@@ -1,7 +1,7 @@
 #include "sip/request-line.h"
 
-RequestLine::RequestLine(const std::string &method, RequestURI uri, const std::string &sipVersion)
-    : method_(method), uri_(uri), sipVersion_(sipVersion) {}
+RequestLine::RequestLine(std::string method, RequestURI uri, std::string sipVersion)
+    : method_(std::move(method)), uri_(std::move(uri)), sipVersion_(std::move(sipVersion)) {}
 
 std::string RequestLine::method() const { return method_; }
 

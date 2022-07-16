@@ -21,7 +21,7 @@ class SIPParser {
    public:
     UnimplementException() : std::runtime_error("Unimplemented") {}
   };
-  SIPParser(const std::string &data);
+  SIPParser(std::string data);
   std::string read();
   char peek();
   char peek(size_t n);

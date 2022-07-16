@@ -52,7 +52,7 @@ class RTPSocket : public RawSocket {
     uint32_t SSRC;
   }
 #endif
-  RTPSocket(int port, const std::string &call_id, std::unique_ptr<Codec> codec);
+  RTPSocket(int port, std::string call_id, std::unique_ptr<Codec> codec);
   size_t Run();
   void Stop();
 

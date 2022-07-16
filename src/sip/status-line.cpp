@@ -1,7 +1,7 @@
 #include "sip/status-line.h"
 
-StatusLine::StatusLine(const std::string &sipVersion, int statusCode, const std::string &reasonPhrase)
-    : sipVersion_(sipVersion), statusCode_(statusCode), reasonPhrase_(reasonPhrase) {}
+StatusLine::StatusLine(std::string sipVersion, int statusCode, std::string reasonPhrase)
+    : sipVersion_(std::move(sipVersion)), statusCode_(statusCode), reasonPhrase_(std::move(reasonPhrase)) {}
 
 int StatusLine::statusCode() const { return statusCode_; }
 

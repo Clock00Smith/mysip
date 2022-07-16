@@ -19,7 +19,7 @@ class RawSocket {
     std::string data;
   };
 
-  RawSocket(const std::string &host, int port);
+  RawSocket(std::string host, int port);
   virtual ~RawSocket();
   RecvData Recv(const size_t mtu = 65535);
   void Send(const std::string &data, const std::string &host, int port);

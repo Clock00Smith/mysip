@@ -10,7 +10,7 @@ class SIPMessage {
   SIPMessage();
   SIPMessage(std::vector<MessageHeader> headers);
   void AddHeaders(const MessageHeader &mh);
-  std::optional<MessageHeader> getHeader(const std::string &name) const;
+  std::optional<MessageHeader> GetHeader(const std::string &name) const;
   enum MessageType { RAW, REQUEST, RESPONSE };
   bool operator==(const SIPMessage &other) const;
   virtual bool _equal(const SIPMessage &other) const = 0;

@@ -1,6 +1,6 @@
 #include "sip/message-header.h"
 
-MessageHeader::MessageHeader(const std::string &name, const std::string &data) : name_(name), data_(data) {}
+MessageHeader::MessageHeader(std::string name, std::string data) : name_(std::move(name)), data_(std::move(data)) {}
 
 bool MessageHeader::operator==(const MessageHeader &other) const {
   return name_ == other.name_ && data_ == other.data_;

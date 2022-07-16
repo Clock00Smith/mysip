@@ -4,7 +4,7 @@
 #include <string>
 class MessageHeader {
  public:
-  MessageHeader(const std::string &name, const std::string &data);
+  MessageHeader(std::string name, std::string data);
   bool operator==(const MessageHeader &other) const;
   bool operator!=(const MessageHeader &other) const;
   friend std::ostream &operator<<(std::ostream &os, const MessageHeader &obj);

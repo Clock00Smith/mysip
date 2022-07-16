@@ -11,7 +11,7 @@
 class Request : public SIPMessage {
  public:
   std::map<int, std::string> STATUS_DESC = {{200, "OK"}, {100, "Trying"}};
-  Request(const RequestLine &rl);
+  Request(RequestLine request_line);
   bool operator==(const Request &other) const;
   std::string body() const;
   void setBody(const std::string &body);

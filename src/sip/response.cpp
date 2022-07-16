@@ -1,30 +1,29 @@
 #include "sip/response.h"
-Response::Response(StatusLine sl) : statusCode_(sl.statusCode()), statusDesc_(sl.reasonPhrase()) {}
-Response::Response(int code, const std::string &status, std::vector<MessageHeader> headers)
-    : statusCode_(code), statusDesc_(status), SIPMessage(headers) {
-  headers_.push_back(MessageHeader("Content-Length", "0"));
+Response::Response(const StatusLine &sl) : statusCode_(sl.statusCode()), statusDesc_(sl.reasonPhrase()) {}
+Response::Response(int code, std::string status, std::vector<MessageHeader> headers)
+    : statusCode_(code), statusDesc_(std::move(status)), SIPMessage(std::move(headers)) {
+  headers_.emplace_back(MessageHeader("Content-Length", "0"));
 }
 
-Response::Response(int code, const std::string &status, const std::vector<MessageHeader> headers,
-                   const std::string &body)
-    : statusCode_(code), statusDesc_(status), SIPMessage(headers), body_(body) {
-  headers_.push_back(MessageHeader("Content-Length", std::to_string(body.size())));
-  headers_.push_back(MessageHeader("Content-Type", "application/sdp"));
+Response::Response(int code, std::string status, std::vector<MessageHeader> headers, const std::string &body)
+    : statusCode_(code), statusDesc_(std::move(status)), SIPMessage(std::move(headers)), body_(body) {
+  headers_.emplace_back(MessageHeader("Content-Length", std::to_string(body.size())));
+  headers_.emplace_back(MessageHeader("Content-Type", "application/sdp"));
 }
 int Response::StatusCode() const { return statusCode_; }
-void Response::AddHeaders(MessageHeader mh) { headers_.push_back(mh); }
+void Response::AddHeaders(const MessageHeader &mh) { headers_.push_back(mh); }
 std::string &Response::body() { return body_; }
 bool Response::_equal(const SIPMessage &other) const {
-  // TODO
+  // TODO(clock)
   return false;
 }
 
 std::string Response::toString() const {
   {
-    std::string val = "";
+    std::string val;
     val += "SIP/2.0 " + std::to_string(statusCode_) + " " + statusDesc_ + "\r\n";
-    for (auto itr = headers_.cbegin(); itr != headers_.cend(); itr++) {
-      val += itr->name() + ": " + itr->data() + "\r\n";
+    for (const auto &header : headers_) {
+      val += header.name() + ": " + header.data() + "\r\n";
     }
     val += "\r\n";
     val += body_ + "\r\n";

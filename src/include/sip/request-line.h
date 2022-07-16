@@ -4,7 +4,7 @@
 #include "request-uri.h"
 class RequestLine {
  public:
-  RequestLine(const std::string &method, RequestURI uri, const std::string &sipVersion);
+  RequestLine(std::string method, RequestURI uri, std::string sipVersion);
   std::string method() const;
   std::string toString() const;
   bool operator==(const RequestLine &other) const;

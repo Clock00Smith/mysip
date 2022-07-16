@@ -8,12 +8,12 @@
 
 class Response : public SIPMessage {
  public:
-  Response(StatusLine sl);
-  Response(int code, const std::string &status, std::vector<MessageHeader> headers);
-  Response(int code, const std::string &status, const std::vector<MessageHeader> headers, const std::string &body);
+  Response(const StatusLine &sl);
+  Response(int code, std::string status, std::vector<MessageHeader> headers);
+  Response(int code, std::string status, const std::vector<MessageHeader> headers, const std::string &body);
 
   int StatusCode() const;
-  void AddHeaders(MessageHeader mh);
+  void AddHeaders(const MessageHeader &mh);
   virtual bool _equal(const SIPMessage &other) const override;
   virtual std::string toString() const override;
   virtual MessageType type() const;

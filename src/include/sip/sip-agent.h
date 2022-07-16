@@ -4,6 +4,7 @@
 #include <lua5.3/lua.hpp>
 #include <map>
 #include <thread>
+#include <unordered_map>
 #include "codecs/g711u.h"
 #include "sdp/sdp.h"
 #include "sip-parser.h"
@@ -11,22 +12,22 @@
 #include "socket/raw-socket.h"
 class SipAgent {
  public:
-  void Serv(std::shared_ptr<SIPMessage> msg);
-  void ServDefault(std::shared_ptr<SIPMessage> msg);
+  void Serv(const std::shared_ptr<SIPMessage> &msg);
+  void ServDefault(const std::shared_ptr<SIPMessage> &msg);
 
   SipAgent(const std::string &host, int port);
   SipAgent(const std::string &host, int port, int lo, int hi);
   void Run(int *count);
-  void addRequestHandler(const std::string &method, std::function<void(std::shared_ptr<SIPMessage>)> func);
-  void reply(int code, std::shared_ptr<SIPMessage> msg);
-  void replyWithMedia(int code, std::shared_ptr<SIPMessage> msg, std::string codec);
-  void print(std::shared_ptr<SIPMessage> msg);
+  void addRequestHandler(const std::string &method, const std::function<void(const std::shared_ptr<SIPMessage> &)> &func);
+  void reply(int code, const std::shared_ptr<SIPMessage> &msg);
+  void replyWithMedia(int code, const std::shared_ptr<SIPMessage> &msg, const std::string &codec);
+  void print(const std::shared_ptr<SIPMessage> &msg);
   void stop();
   void log(const std::string &msg);
   void doLua(const std::string &path, std::shared_ptr<SIPMessage> msg);
-  void endDialog(std::shared_ptr<SIPMessage> msg);
+  void endDialog(const std::shared_ptr<SIPMessage> &msg);
   void invite(const std::string &toUri, const std::string &fromUri);
-  void sendAck(std::shared_ptr<Response> msg);
+  void sendAck(const std::shared_ptr<Response> &msg);
 
  private:
   int rtpPortHi_{10000}, rtpPortLo_{15000};  // port range.

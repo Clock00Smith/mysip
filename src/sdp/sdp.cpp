@@ -17,13 +17,12 @@ SDP SDP::GetSDPWithCodec(const std::string &codec, const std::string &call_id) {
     }
     round++;
     try {
-      // TODO, make socket run;
       sock = std::make_shared<RTPSocket>(port, call_id,
                                          std::make_unique<G711U>("./test-" + std::to_string(port) + ".pcm"));
     } catch (RawSocket::SocketException) {
       continue;
     }
-    return SDP(port, sock);
+    return {port, sock};
   } while (round < 50);
 }
 
@@ -38,7 +37,7 @@ SDP::SDP(int port, std::shared_ptr<RTPSocket> audioSocket) {
       std::to_string(port) +
       " RTP/AVP 0\n"
       "a=rtpmap:0 PCMU/8000\n\r\n";
-  audioSocket_ = audioSocket;
+  audioSocket_ = std::move(audioSocket);
 }
 
 std::shared_ptr<RTPSocket> SDP::getSocket() { return audioSocket_; }

@@ -1,6 +1,6 @@
 #include "sip/sip-parser.h"
 
-SIPParser::SIPParser(const std::string &data) : data_(data), cur_ptr_(0) {}
+SIPParser::SIPParser(std::string data) : data_(std::move(data)), cur_ptr_(0) {}
 
 std::string SIPParser::read() {
   size_t tmp = cur_ptr_;
@@ -28,15 +28,14 @@ bool SIPParser::match(char c, char expect) { return c == expect; }
 void SIPParser::mustMatch(char c, char expect) {
   if (cur_ptr_ >= data_.size()) {
     throw UnmatchException(cur_ptr_, "");
-  } else {
-    if (data_[cur_ptr_] != expect) {
-      throw UnmatchException(cur_ptr_, std::to_string(expect));
-    }
+  }
+  if (data_[cur_ptr_] != expect) {
+    throw UnmatchException(cur_ptr_, std::to_string(expect));
   }
 }
 
 std::string SIPParser::readTillCRLF() {
-  std::string val = "";
+  std::string val;
   while (peek() != '\r' && peek(2) != '\n') {
     val += read();
   }
@@ -52,21 +51,20 @@ void SIPParser::eatSpaces() {
 std::shared_ptr<SIPMessage> SIPParser::parse() { return SIP_MESSAGE(); }
 
 bool SIPParser::IsRequest() const {
-  // TODO
+  // TODO(clock)
   return false;
 }
 
 std::shared_ptr<SIPMessage> SIPParser::SIP_MESSAGE() {
   if (peek() == 'S' && peek(2) == 'I' && peek(3) == 'P') {
     return RESPONSE();
-  } else {
-    return REQUEST();
   }
+  return REQUEST();
 };
 
 bool SIPParser::IsMethod() {
-  // TODO
-  // Dont remember why I need this.
+  // TODO(clock)
+  // check is a method is a method in rfc. ignore for now.
   return true;
 }
 
@@ -99,7 +97,7 @@ std::shared_ptr<Request> SIPParser::REQUEST() {
   }
 }
 std::shared_ptr<Response> SIPParser::RESPONSE() {
-  // TODO
+  // TODO(clock)
   std::vector<MessageHeader> headers;
   StatusLine sl = STATUS_LINE();
   Response res(sl);
@@ -120,12 +118,12 @@ RequestLine SIPParser::REQUEST_LINE() {
   SP();
   std::string sip_version = SIP_VERSION();
   CRLF();
-  return RequestLine(method, ruri, sip_version);
+  return {method, ruri, sip_version};
 }
 
 std::string SIPParser::REQUEST_URI() {
-  std::string val = "";
-  // TODO
+  std::string val;
+  // TODO(clock)
   // there is actually a rule for URI.
   // ignore it for now.
   while (peek() != SPACE) {
@@ -144,23 +142,22 @@ StatusLine SIPParser::STATUS_LINE() {
   SP();
   std::string reason_phrase = REASON_PHRASE();
   CRLF();
-  return StatusLine(sip_version, status_code, reason_phrase);
+  return {sip_version, status_code, reason_phrase};
 }
 
 int SIPParser::STATUS_CODE() {
-  std::string val = "";
+  std::string val;
   for (int i = 0; i < 3; i++) {
     if (peek() < '0' && peek() > '9') {
       throw UnmatchException(cur_ptr_, "digit.");
-    } else {
-      val += read();
     }
+    val += read();
   }
   return std::atoi(val.c_str());
 }
 
 std::string SIPParser::REASON_PHRASE() {
-  std::string val = "";
+  std::string val;
   val += readTillCRLF();
   return val;
 }
@@ -246,7 +243,7 @@ MessageHeader SIPParser::MESSAGE_HEADER() {
   read();
   eatSpaces();
   std::string header_parm = readTillCRLF();
-  return MessageHeader(header_name, header_parm);
+  return {header_name, header_parm};
 }
 
 MessageHeader SIPParser::EXPECT_HEADER(const std::string &header_name) {
@@ -254,12 +251,11 @@ MessageHeader SIPParser::EXPECT_HEADER(const std::string &header_name) {
     mustMatch(peek(), c);
     read();
   }
-  std::string headerName = header_name;
   mustMatch(peek(), HCOLON);
   read();
   eatSpaces();
-  std::string headerParm = readTillCRLF();
-  return MessageHeader(headerName, headerParm);
+  std::string header_param = readTillCRLF();
+  return {header_name, header_param};
 }
 
 MessageHeader SIPParser::VIA() {
@@ -268,12 +264,12 @@ MessageHeader SIPParser::VIA() {
     mustMatch(peek(), c);
     read();
   }
-  std::string headerName = "Via";
+  std::string header_name = "Via";
   mustMatch(peek(), HCOLON);
   read();
   eatSpaces();
-  std::string headerParm = readTillCRLF();
-  return MessageHeader(headerName, headerParm);
+  std::string header_param = readTillCRLF();
+  return {header_name, header_param};
 }
 
 // * 0x00-0xFF
