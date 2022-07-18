@@ -9,11 +9,10 @@
 class Response : public SIPMessage {
  public:
   Response(const StatusLine &sl);
-  Response(int code, std::string status, std::vector<MessageHeader> headers);
-  Response(int code, std::string status, const std::vector<MessageHeader> headers, const std::string &body);
+  Response(int code, std::string status, std::vector<std::shared_ptr<MessageHeader>> headers);
+  Response(int code, std::string status, const std::vector<std::shared_ptr<MessageHeader>> headers, const std::string &body);
 
   int StatusCode() const;
-  void AddHeaders(const MessageHeader &mh);
   virtual bool _equal(const SIPMessage &other) const override;
   virtual std::string toString() const override;
   virtual MessageType type() const;

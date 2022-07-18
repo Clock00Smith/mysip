@@ -86,7 +86,7 @@ std::shared_ptr<Request> SIPParser::REQUEST() {
     RequestLine rl = REQUEST_LINE();
     Request req(rl);
     while (peek() != '\r') {
-      MessageHeader mh = MESSAGE_HEADER();
+      std::shared_ptr<MessageHeader> mh = MESSAGE_HEADER();
       req.AddHeaders(mh);
       CRLF();
     }
@@ -102,7 +102,7 @@ std::shared_ptr<Response> SIPParser::RESPONSE() {
   StatusLine sl = STATUS_LINE();
   Response res(sl);
   while (peek() != '\r') {
-    MessageHeader mh = MESSAGE_HEADER();
+    auto mh = MESSAGE_HEADER();
     res.AddHeaders(mh);
     CRLF();
   }
@@ -237,13 +237,56 @@ std::string SIPParser::SIP_VERSION() {
 }
 
 // this is HUGE! we only implement those we will encounter.
-MessageHeader SIPParser::MESSAGE_HEADER() {
+std::shared_ptr<MessageHeader> SIPParser::MESSAGE_HEADER() {
   std::string header_name = readTill(HCOLON);
   mustMatch(peek(), HCOLON);
   read();
   eatSpaces();
+  if (header_name == "Via") {
+    return VIA_HEADER();
+  }
   std::string header_parm = readTillCRLF();
-  return {header_name, header_parm};
+  return std::make_shared<MessageHeader>(header_name, header_parm);
+}
+
+// sent-protocol LWS sent-by *(SEMI via-params)
+std::shared_ptr<ViaHeader> SIPParser::VIA_HEADER() {
+  size_t cur = cur_ptr_;
+  std::string send_protocol = SENT_PROTOCOL();
+  std::string via_params;
+  // it is a LWS, but most system will be just a SWS
+  eatSpaces();
+  auto [host, port] = SENT_BY();
+  // TODO(clock): we dont support the via-params for now, so if SEMI met, just read till end;
+  if (peek() == ';') {
+    read();
+    via_params = readTillCRLF();
+  }
+  size_t end = cur_ptr_;
+  return std::make_shared<ViaHeader>("Via", data_.substr(cur, end - cur), send_protocol, host, port, via_params);
+}
+std::string SIPParser::SENT_PROTOCOL() {
+  std::string val;
+  while (peek() != ' ') {
+    val += read();
+  }
+  return val;
+}
+std::pair<std::string, int> SIPParser::SENT_BY() {
+  std::string host;
+  while (peek() != ';' && peek() != ':') {
+    host += read();
+  }
+  if (peek() == ':') {
+    read();
+    std::string port;
+    while (peek() != ';') {
+      port += read();
+    }
+    return std::make_pair(host, std::atoi(port.c_str()));
+  } else {
+    return std::make_pair(host, 5060);
+  }
 }
 
 MessageHeader SIPParser::EXPECT_HEADER(const std::string &header_name) {

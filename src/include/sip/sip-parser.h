@@ -49,8 +49,10 @@ class SIPParser {
   // SIP-Version = "SIP" "/" 1*DIGIT "." 1*DIGIT
   std::string SIP_VERSION();
   // this is HUGE! we only implement those we will encounter.
-  MessageHeader MESSAGE_HEADER();
-
+  std::shared_ptr<MessageHeader> MESSAGE_HEADER();
+  std::shared_ptr<ViaHeader> VIA_HEADER();
+  std::string SENT_PROTOCOL();
+  std::pair<std::string, int> SENT_BY();
   MessageHeader EXPECT_HEADER(const std::string &header_name);
   MessageHeader VIA();
   // * 0x00-0xFF

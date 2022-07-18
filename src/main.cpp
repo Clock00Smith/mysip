@@ -13,10 +13,14 @@ int main() {
   std::cout << "bring up sip." << std::endl;
   SipAgent sip_agent("0.0.0.0", 5060, 10000, 20000);
   std::thread sip_agent_thr([&sip_agent]() {
-    sip_agent.addRequestHandler("INVITE", [&sip_agent](const std::shared_ptr<SIPMessage>& msg) { sip_agent.doLua("../scripts/invite.lua", msg); });
-    sip_agent.addRequestHandler("CANCEL", [&sip_agent](const std::shared_ptr<SIPMessage>& msg) { sip_agent.doLua("../scripts/cancel.lua", msg); });
-    sip_agent.addRequestHandler("ACK", [&sip_agent](const std::shared_ptr<SIPMessage>& msg) {});
-    sip_agent.addRequestHandler("BYE", [&sip_agent](const std::shared_ptr<SIPMessage>& msg) {
+    sip_agent.addRequestHandler("INVITE", [&sip_agent](const std::shared_ptr<SIPMessage> &msg) {
+      sip_agent.doLua("../scripts/invite.lua", msg);
+    });
+    sip_agent.addRequestHandler("CANCEL", [&sip_agent](const std::shared_ptr<SIPMessage> &msg) {
+      sip_agent.doLua("../scripts/cancel.lua", msg);
+    });
+    sip_agent.addRequestHandler("ACK", [&sip_agent](const std::shared_ptr<SIPMessage> &msg) {});
+    sip_agent.addRequestHandler("BYE", [&sip_agent](const std::shared_ptr<SIPMessage> &msg) {
       sip_agent.doLua("../scripts/bye.lua", msg);
       sip_agent.endDialog(msg);
     });
@@ -27,6 +31,8 @@ int main() {
     switch (input_char) {
       case 'i':
         sip_agent.invite("sip:9196@192.168.56.101:5061", "sip:1000@192.168.56.101:5060");
+        break;
+      default:
         break;
     }
     std::cout << "q to quit." << std::endl;

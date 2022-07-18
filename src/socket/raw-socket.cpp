@@ -9,7 +9,7 @@ RawSocket::RawSocket(std::string host, int port) : host_(std::move(host)), port_
     local_addr.sin_port = htons(port_);
     socklen_t len = sizeof(local_addr);
     int status = bind(fd_, reinterpret_cast<struct sockaddr *>(&local_addr), len);
-    if (status < 0){
+    if (status < 0) {
       throw SocketException("bind fail.");
     }
     timeval tv = {1, 0};

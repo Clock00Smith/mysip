@@ -8,9 +8,10 @@
 class SIPMessage {
  public:
   SIPMessage();
-  SIPMessage(std::vector<MessageHeader> headers);
-  void AddHeaders(const MessageHeader &mh);
-  std::optional<MessageHeader> GetHeader(const std::string &name) const;
+  SIPMessage(std::vector<std::shared_ptr<MessageHeader>> headers);
+  void AddHeaders(std::shared_ptr<MessageHeader> mh);
+  void AddHeaders(MessageHeader mh);
+  std::optional<std::shared_ptr<MessageHeader>> GetHeader(const std::string &name) const;
   enum MessageType { RAW, REQUEST, RESPONSE };
   bool operator==(const SIPMessage &other) const;
   virtual bool _equal(const SIPMessage &other) const = 0;
@@ -22,5 +23,5 @@ class SIPMessage {
   friend std::ostream &operator<<(std::ostream &os, const SIPMessage &obj);
 
  protected:
-  std::vector<MessageHeader> headers_;
+  std::vector<std::shared_ptr<MessageHeader>> headers_;
 };

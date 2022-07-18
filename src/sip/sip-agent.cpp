@@ -29,7 +29,7 @@ void SipAgent::Serv(const std::shared_ptr<SIPMessage> &msg) {
   }
 }
 void SipAgent::sendAck(const std::shared_ptr<Response> &msg) {
-  std::string call_id = msg->GetHeader("Call-ID").value().data();
+  std::string call_id = msg->GetHeader("Call-ID").value()->data();
   std::cout << "This is a response for: " << call_id << std::endl;
   SipDialog sip_dialog = dialogs_[call_id];
   std::thread rtp_thread([](const std::shared_ptr<RTPSocket> &sock) { sock->Run(); }, sip_dialog.rtpSocket_);
@@ -75,15 +75,18 @@ void SipAgent::addRequestHandler(const std::string &method,
 
 void SipAgent::reply(int code, const std::shared_ptr<SIPMessage> &msg) {
   auto req = std::dynamic_pointer_cast<Request>(msg);
-  socket_.Send(req->genReply(code)->toString(), "192.168.56.101", 5061);
+  auto via = std::dynamic_pointer_cast<ViaHeader>(req->GetHeader("Via").value());
+  std::cout << "Sending reply: " << code << " to " << via->host() << ":" << via->port() << std::endl;
+  socket_.Send(req->genReply(code)->toString(), via->host(), via->port());
 }
 
 void SipAgent::replyWithMedia(int code, const std::shared_ptr<SIPMessage> &msg, const std::string &codec) {
   auto req = std::dynamic_pointer_cast<Request>(msg);
-  std::string call_id = req->GetHeader("Call-ID").value().data();
-  SDP sdp = SDP::GetSDPWithCodec(codec, req->GetHeader("Call-ID").value().data());
+  auto via = std::dynamic_pointer_cast<ViaHeader>(req->GetHeader("Via").value());
+  std::string call_id = req->GetHeader("Call-ID").value()->data();
+  SDP sdp = SDP::GetSDPWithCodec(codec, req->GetHeader("Call-ID").value()->data());
   SipDialog sip_dialog;
-  sip_dialog.callID_ = req->GetHeader("Call-ID").value().data();
+  sip_dialog.callID_ = req->GetHeader("Call-ID").value()->data();
   sip_dialog.hasMedia_ = true;
   sip_dialog.rtpSocket_ = sdp.getSocket();
   std::thread rtp_thread([](const std::shared_ptr<RTPSocket> &sock) { sock->Run(); }, sip_dialog.rtpSocket_);
@@ -92,7 +95,8 @@ void SipAgent::replyWithMedia(int code, const std::shared_ptr<SIPMessage> &msg, 
   std::cout << call_id << " : using port: " << sip_dialog.rtpSocket_->port() << std::endl;
 
   auto rep = req->genReply(code, sdp.toString());
-  socket_.Send(rep->toString(), "192.168.56.101", 5061);
+  std::cout << "Sending reply: " << code << " to " << via->host() << ":" << via->port() << std::endl;
+  socket_.Send(rep->toString(), via->host(), via->port());
 }
 
 void SipAgent::print(const std::shared_ptr<SIPMessage> &msg) { std::cout << *msg << std::endl; }
@@ -103,7 +107,7 @@ void SipAgent::log(const std::string &msg) { std::cout << msg << std::endl; }
 
 void SipAgent::endDialog(const std::shared_ptr<SIPMessage> &msg) {
   auto req = std::dynamic_pointer_cast<Request>(msg);
-  std::string call_id = req->GetHeader("Call-ID").value().data();
+  std::string call_id = req->GetHeader("Call-ID").value()->data();
   if (auto itr = dialogs_.find(call_id); itr != dialogs_.end()) {
     std::cout << "removing " << call_id << " on port: " << dialogs_[call_id].rtpSocket_->port() << std::endl;
     dialogs_[call_id].rtpSocket_->Stop();

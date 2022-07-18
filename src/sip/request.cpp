@@ -16,8 +16,8 @@ bool Request::operator==(const Request &other) const {
 
 std::string Request::body() const { return body_; }
 void Request::setBody(const std::string &body) {
-  AddHeaders(MessageHeader("Content-Type", "application/sdp"));
-  AddHeaders(MessageHeader("Content-Length", std::to_string(body.size())));
+  AddHeaders(std::make_shared<MessageHeader>("Content-Type", "application/sdp"));
+  AddHeaders(std::make_shared<MessageHeader>("Content-Length", std::to_string(body.size())));
   body_ = body;
 }
 std::string Request::getMethod() const { return rl_.method(); }
@@ -25,7 +25,7 @@ std::string Request::getMethod() const { return rl_.method(); }
 std::shared_ptr<SIPMessage> Request::genReply(int code) { return genReply(code, ""); }
 
 std::shared_ptr<SIPMessage> Request::genReply(int code, const std::string &body) {
-  std::vector<MessageHeader> headers;
+  std::vector<std::shared_ptr<MessageHeader>> headers;
   headers.push_back(GetHeader("Via").value());
   headers.push_back(GetHeader("From").value());
   headers.push_back(GetHeader("To").value());
@@ -59,7 +59,7 @@ std::string Request::toString() const {
   std::string val;
   val += rl_.toString() + "\r\n";
   for (auto &mh : headers_) {
-    val += mh.name() + ": " + mh.data() + "\r\n";
+    val += mh->name() + ": " + mh->data() + "\r\n";
   }
   val += "\r\n";
   val += body_ + "\r\n";
