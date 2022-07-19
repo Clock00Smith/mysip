@@ -1,8 +1,8 @@
 #pragma once
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <string>
-#include <memory>
 
 #include <codecs/g711u.h>
 #include <rtp/rtp-socket.h>
@@ -12,6 +12,7 @@ class SDP {
   static SDP GetSDPWithCodec(const std::string &codec, const std::string &call_id);
   std::string toString() const;
   std::shared_ptr<RTPSocket> getSocket();
+
  private:
   static int nextPort;
   static std::mutex portLock;
