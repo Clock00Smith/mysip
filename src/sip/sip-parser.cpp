@@ -82,7 +82,6 @@ void SIPParser::SP() {
 
 // Repuest - Line *(message - header) CRLF[message - body] std::shared_ptr<Request> REQUEST()
 std::shared_ptr<Request> SIPParser::REQUEST() {
-  if (IsMethod()) {
     RequestLine rl = REQUEST_LINE();
     Request req(rl);
     while (peek() != '\r') {
@@ -94,7 +93,6 @@ std::shared_ptr<Request> SIPParser::REQUEST() {
     CRLF();
     req.body() = MESSAGE_BODY();
     return std::make_shared<Request>(req);
-  }
 }
 std::shared_ptr<Response> SIPParser::RESPONSE() {
   // TODO(clock)

@@ -76,3 +76,5 @@ std::ostream &operator<<(std::ostream &os, const Request &obj) {
   os << std::endl << obj.body_ << std::endl;
   return os;
 }
+
+const RequestLine &Request::requestLine() const { return rl_; }

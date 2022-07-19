@@ -14,3 +14,5 @@ std::ostream &operator<<(std::ostream &os, const RequestLine &obj) {
 }
 
 std::string RequestLine::toString() const { return method_ + " " + uri_.toString() + " " + sipVersion_; }
+
+const RequestURI &RequestLine::uri() const { return uri_; }

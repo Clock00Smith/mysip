@@ -26,7 +26,7 @@ int main() {
     });
     sip_agent.Run(&count);
   });
-  char input_char;
+  char input_char = '0';
   while (input_char != 'q') {
     switch (input_char) {
       case 'i':

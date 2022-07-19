@@ -90,3 +90,10 @@ TEST(TEST_INVITE, test_sipp_uac_invite) {
       "a=rtpmap:0 PCMU/8000";
   ASSERT_NO_THROW(SIPParser(head + body).REQUEST());
 }
+
+TEST(TEST_REQUEST_URI, test_request_uri){
+  std::string req = "sip:9196@192.168.56.101:5061";
+  RequestURI uri = req;
+  ASSERT_EQ(uri.host(), "192.168.56.101");
+  ASSERT_EQ(uri.port(), 5061);
+}

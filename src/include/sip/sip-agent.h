@@ -28,9 +28,11 @@ class SipAgent {
   void endDialog(const std::shared_ptr<SIPMessage> &msg);
   void invite(const std::string &toUri, const std::string &fromUri);
   void sendAck(const std::shared_ptr<Response> &msg);
-
+  
  private:
-  int rtpPortHi_{10000}, rtpPortLo_{15000};  // port range.
+  std::atomic<int> nextCallID_;
+  int getNextCallID();
+  int rtpPortHi_{15000}, rtpPortLo_{10000};  // port range.
   int nextPort_{10000};                      // next port for rtp
   bool running_{false};
   RawSocket socket_;  // the sip socket.

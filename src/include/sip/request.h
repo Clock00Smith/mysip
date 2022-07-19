@@ -23,7 +23,7 @@ class Request : public SIPMessage {
   virtual std::string toString() const override;
   virtual MessageType type() const override;
   friend std::ostream &operator<<(std::ostream &os, const Request &obj);
-
+  const RequestLine& requestLine() const;
  private:
   RequestLine rl_;
   std::string body_;

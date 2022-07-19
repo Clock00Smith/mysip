@@ -10,6 +10,7 @@ class RequestLine {
   bool operator==(const RequestLine &other) const;
 
   friend std::ostream &operator<<(std::ostream &os, const RequestLine &obj);
+  const RequestURI &uri() const;
 
  private:
   std::string method_;
