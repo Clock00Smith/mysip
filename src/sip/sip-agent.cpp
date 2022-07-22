@@ -113,7 +113,9 @@ void SipAgent::print(const std::shared_ptr<SIPMessage> &msg) { std::cout << *msg
 void SipAgent::stop() { running_ = false; }
 
 void SipAgent::log(const std::string &msg) { std::cout << msg << std::endl; }
-
+void SipAgent::setFromURI(const std::string &fromURI) {
+  fromURI_ = fromURI;
+}
 void SipAgent::endDialog(const std::shared_ptr<SIPMessage> &msg) {
   auto req = std::dynamic_pointer_cast<Request>(msg);
   std::string call_id = req->GetHeader("Call-ID").value()->data();
@@ -125,7 +127,9 @@ void SipAgent::endDialog(const std::shared_ptr<SIPMessage> &msg) {
     std::cout << "no " << call_id << " found." << std::endl;
   }
 }
-
+void SipAgent::invite(const std::string &toUri){
+  invite(toUri, fromURI_);
+}
 void SipAgent::invite(const std::string &toUri, const std::string &fromUri) {
   std::string call_id = std::to_string(getNextCallID());
   Request req(RequestLine("INVITE", RequestURI(toUri), "SIP/2.0"));

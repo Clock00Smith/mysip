@@ -16,7 +16,7 @@ add_executable(test-parser tests/sip-parser/test-basic.cpp)
 target_link_libraries(test-parser gtest gtest_main SipParser)
 add_test(NAME test-parser COMMAND test-parser)
 
-add_executable(my-sip src/main.cpp src/sdp/sdp.cpp src/socket/raw-socket.cpp src/rtp/rtp-socket.cpp)
+add_executable(my-sip src/main.cpp src/sdp/sdp.cpp src/socket/raw-socket.cpp src/rtp/rtp-socket.cpp src/utils/command.cpp)
 target_link_libraries(my-sip SipParser ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(gui-sip src/main-gui.cpp src/sdp/sdp.cpp src/socket/raw-socket.cpp src/rtp/rtp-socket.cpp)
