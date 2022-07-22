@@ -24,13 +24,16 @@ class SipAgent {
   void print(const std::shared_ptr<SIPMessage> &msg);
   void stop();
   void log(const std::string &msg);
+  void setFromURI(const std::string &fromURI);
   void doLua(const std::string &path, std::shared_ptr<SIPMessage> msg);
   void endDialog(const std::shared_ptr<SIPMessage> &msg);
+  void invite(const std::string &toUri);
   void invite(const std::string &toUri, const std::string &fromUri);
   void sendAck(const std::shared_ptr<Response> &msg);
   
  private:
   std::atomic<int> nextCallID_;
+  std::string fromURI_;
   int getNextCallID();
   int rtpPortHi_{15000}, rtpPortLo_{10000};  // port range.
   int nextPort_{10000};                      // next port for rtp
