@@ -19,7 +19,7 @@ add_test(NAME test-parser COMMAND test-parser)
 add_executable(my-sip src/main.cpp src/sdp/sdp.cpp src/socket/raw-socket.cpp src/rtp/rtp-socket.cpp src/utils/command.cpp)
 target_link_libraries(my-sip SipParser ${CMAKE_THREAD_LIBS_INIT})
 
-add_executable(gui-sip src/main-gui.cpp src/sdp/sdp.cpp src/socket/raw-socket.cpp src/rtp/rtp-socket.cpp)
+add_executable(gui-sip src/main-gui.cpp src/sdp/sdp.cpp src/socket/raw-socket.cpp src/rtp/rtp-socket.cpp src/utils/command.cpp)
 target_include_directories(gui-sip PRIVATE third-party/imgui)
 target_link_libraries(gui-sip SipParser ${CMAKE_THREAD_LIBS_INIT} ImGui)
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
