@@ -6,7 +6,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include_directories(src/include)
 aux_source_directory(src SIP_SRC_DIR)
 add_subdirectory(src/sip)
-add_subdirectory(third-party/imgui)
+add_subdirectory(deps/imgui)
 find_package(Threads)
 
 enable_testing()
@@ -20,7 +20,7 @@ add_executable(my-sip src/main.cpp src/sdp/sdp.cpp src/socket/raw-socket.cpp src
 target_link_libraries(my-sip SipParser ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(gui-sip src/main-gui.cpp src/sdp/sdp.cpp src/socket/raw-socket.cpp src/rtp/rtp-socket.cpp src/utils/command.cpp)
-target_include_directories(gui-sip PRIVATE third-party/imgui)
+target_include_directories(gui-sip PRIVATE deps/imgui)
 target_link_libraries(gui-sip SipParser ${CMAKE_THREAD_LIBS_INIT} ImGui)
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     add_definitions(-DDEBUG)

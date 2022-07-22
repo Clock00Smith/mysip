@@ -1,0 +1,7 @@
+aux_source_directory(. IMGUI_LIBS)
+include_directories(backends)
+include_directories(.)
+find_package(PkgConfig)
+pkg_search_module(GLFW3 REQUIRED glfw3)
+add_library(ImGui ${IMGUI_LIBS} backends/imgui_impl_opengl3.cpp backends/imgui_impl_glfw.cpp)
+target_link_libraries(ImGui ${GLFW3_LIBRARIES} GL dl)
